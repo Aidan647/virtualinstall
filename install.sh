@@ -52,7 +52,7 @@ sync_repo() {
 
     if [[ -z "$(git -C "${INSTALL_DIR}" status --porcelain)" ]]; then
       echo "Updating repository..."
-      git -C "${INSTALL_DIR}" pull
+      git -C "${INSTALL_DIR}" pull --rebase --quiet
       minimize_repo
     else
       echo "Local changes detected in ${INSTALL_DIR}; skipping pull." >&2
