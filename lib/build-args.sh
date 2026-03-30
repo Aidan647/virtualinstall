@@ -6,21 +6,21 @@ usage() {
 
   cat <<EOF
 Usage:
-  ${cmd} create <name> [--output-dir <host-dir>] -- <pkg1> <pkg2> ...
-  ${cmd} install <name> [--output-dir <host-dir>] [--apt-cmd <cmd>] -- <pkg1> <pkg2> ...
-  ${cmd} remove <name> [--apt-cmd <cmd>]
-  ${cmd} clean [--output-dir <host-dir>]
-  ${cmd} list [name]
+  virtualinstall create <name> [--output-dir <host-dir>] -- <pkg1> <pkg2> ...
+  virtualinstall install <name> [--output-dir <host-dir>] [--apt-cmd <cmd>] -- <pkg1> <pkg2> ...
+  virtualinstall remove <name> [--apt-cmd <cmd>]
+  virtualinstall clean [--output-dir <host-dir>]
+  virtualinstall list [name]
 
 Examples:
-  ${cmd} create default -- git ncdu lsd curl wget duf
-  ${cmd} install base --output-dir ./out -- git curl
-  ${cmd} install base --apt-cmd apt-get -- git curl
-  ${cmd} install dev -- jq ripgrep
-  ${cmd} remove base
-  ${cmd} clean --output-dir ./out
-  ${cmd} list
-  ${cmd} list default
+  virtualinstall create default -- git ncdu lsd curl wget duf
+  virtualinstall install base --output-dir ./out -- git curl
+  virtualinstall install base --apt-cmd apt-get -- git curl
+  virtualinstall install dev -- jq ripgrep
+  virtualinstall remove base
+  virtualinstall clean --output-dir ./out
+  virtualinstall list
+  virtualinstall list default
 
 Notes:
   - Use '--' to separate build options from dependency list.

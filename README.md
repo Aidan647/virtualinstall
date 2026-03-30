@@ -87,8 +87,7 @@ APT command selection default order:
 
 ## Notes
 
-- Local build script: `deb-build.sh`
-- Host command entrypoint: `build.sh`
-- Host requirements: `dpkg-deb`, `apt-cache`, `sha256sum`, `sed`, `tr`, `mktemp`
+- Command entrypoint: `build.sh`
+- Requirements: `dpkg-deb`, `apt-cache`, `sha256sum`, `sed`, `tr`, `mktemp` (found in dpkg, apt, coreutils)
 - Tag files are installed in `/var/lib/virtualinstall/tags/`
 - Repeated `create`/`install` with same input reuses existing artifact when available

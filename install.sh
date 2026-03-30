@@ -18,6 +18,13 @@ require_cmd() {
   command -v "$1" >/dev/null 2>&1 || fail "required command not found: $1"
 }
 
+require_runtime_cmds() {
+  local cmd
+  for cmd in dpkg-deb apt-cache sha256sum sed tr mktemp; do
+    require_cmd "$cmd"
+  done
+}
+
 prompt_input() {
   local var_name="$1"
   local prompt_text="$2"
@@ -166,6 +173,7 @@ prompt_shell_target() {
 
 main() {
   require_cmd git
+  require_runtime_cmds
 
   sync_repo
   install_launcher
