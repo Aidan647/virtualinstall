@@ -6,8 +6,8 @@ usage() {
 
   cat <<EOF
 Usage:
-  ${cmd} create <name> [--output-dir <host-dir>] [--rebuild-image] -- <pkg1> <pkg2> ...
-  ${cmd} install <name> [--output-dir <host-dir>] [--rebuild-image] [--apt-cmd <cmd>] -- <pkg1> <pkg2> ...
+  ${cmd} create <name> [--output-dir <host-dir>] -- <pkg1> <pkg2> ...
+  ${cmd} install <name> [--output-dir <host-dir>] [--apt-cmd <cmd>] -- <pkg1> <pkg2> ...
   ${cmd} remove <name> [--apt-cmd <cmd>]
   ${cmd} clean [--output-dir <host-dir>]
   ${cmd} list [name]
@@ -16,18 +16,14 @@ Examples:
   ${cmd} create default -- git ncdu lsd curl wget duf
   ${cmd} install base --output-dir ./out -- git curl
   ${cmd} install base --apt-cmd apt-get -- git curl
-  ${cmd} install dev --rebuild-image -- jq ripgrep
+  ${cmd} install dev -- jq ripgrep
   ${cmd} remove base
   ${cmd} clean --output-dir ./out
   ${cmd} list
   ${cmd} list default
 
 Notes:
-  - This is the host wrapper command.
-  - It builds/runs Docker image ${IMAGE_NAME}.
-  - Container script receives only: <name> <pkg1> [pkg2 ...].
   - Use '--' to separate build options from dependency list.
-  - Use '--rebuild-image' to force a fresh Docker image build.
   - APT command selection defaults to: apt-fast, then apt, then apt-get.
   - Use '--apt-cmd <cmd>' to override APT command selection.
   - Generated package is written to host output dir (default: ./out).
@@ -137,10 +133,6 @@ parse_args() {
         (($# >= 2)) || die "--output-dir requires a value"
         HOST_OUTPUT_DIR="$2"
         shift 2
-        ;;
-      --rebuild-image)
-        FORCE_REBUILD=1
-        shift
         ;;
       --apt-cmd)
         (($# >= 2)) || die "--apt-cmd requires a value"

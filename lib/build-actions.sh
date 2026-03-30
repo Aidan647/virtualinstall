@@ -1,12 +1,5 @@
 #!/usr/bin/env bash
 
-ensure_docker() {
-  command -v docker >/dev/null 2>&1 || {
-    echo "error: docker is required but not found" >&2
-    exit 10
-  }
-}
-
 ensure_apt() {
   resolve_apt_cmd
 }
@@ -60,25 +53,8 @@ run_privileged() {
   die "this operation requires root privileges"
 }
 
-ensure_image() {
-  if ((FORCE_REBUILD == 1)); then
-    echo "Forcing rebuild of Docker image $IMAGE_NAME from $SCRIPT_DIR..." >&2
-    docker build --pull --no-cache -t "$IMAGE_NAME" "$SCRIPT_DIR"
-    return
-  fi
-
-  if ! docker image inspect "$IMAGE_NAME" >/dev/null 2>&1; then
-    echo "Image $IMAGE_NAME not found locally. Building from $SCRIPT_DIR..." >&2
-    docker build -t "$IMAGE_NAME" "$SCRIPT_DIR"
-  fi
-}
-
 run_builder() {
-  docker run --rm \
-    -v "${HOST_OUTPUT_DIR}:/work/out" \
-    "$IMAGE_NAME" \
-    "$NAME" \
-    "${PACKAGES[@]}"
+  OUTPUT_DIR="${HOST_OUTPUT_DIR}" bash "${SCRIPT_DIR}/deb-build.sh" "$NAME" "${PACKAGES[@]}"
 }
 
 expected_artifact_path() {
@@ -102,8 +78,6 @@ ensure_artifact() {
     return
   fi
 
-  ensure_docker
-  ensure_image
   run_builder >/dev/null
 
   [[ -f "$artifact_path" ]] || die "expected artifact not found after build: $artifact_path"

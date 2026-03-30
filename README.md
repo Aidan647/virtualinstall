@@ -65,7 +65,6 @@ virtualinstall clean --output-dir ./out
 ## Options
 
 - `--output-dir <dir>`: output directory for generated `.deb` files
-- `--rebuild-image`: force Docker image rebuild
 - `--apt-cmd <cmd>`: override package manager command used by `install`/`remove`
 
 APT command selection default order:
@@ -75,7 +74,8 @@ APT command selection default order:
 
 ## Notes
 
-- Container build script: `docker-build.sh`
+- Local build script: `deb-build.sh`
 - Host command entrypoint: `build.sh`
+- Host requirements: `dpkg-deb`, `apt-cache`, `sha256sum`, `sed`, `tr`, `mktemp`
 - Tag files are installed in `/var/lib/virtualinstall/tags/`
 - Repeated `create`/`install` with same input reuses existing artifact when available

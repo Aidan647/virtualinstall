@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Example: docker-build.sh default git ncdu lsd curl wget duf
+# Example: deb-build.sh default git ncdu lsd curl wget duf
 
 sanitize_name() {
   local raw="$1"
@@ -39,7 +39,7 @@ parse_args() {
 
   for arg in "${PACKAGES[@]}"; do
     if [[ "$arg" == --* ]]; then
-      echo "error: options are not supported in docker-build.sh" >&2
+      echo "error: options are not supported in deb-build.sh" >&2
       exit 1
     fi
   done
@@ -64,9 +64,18 @@ parse_args() {
 validate_packages() {
   local missing=()
 
-  # Refresh indexes for package validation.
-  export DEBIAN_FRONTEND=noninteractive
-  apt-get update -qq
+  command -v apt-cache >/dev/null 2>&1 || {
+    echo "error: required command not found: apt-cache" >&2
+    exit 3
+  }
+
+  # Refresh indexes when possible, but do not require root for local builds.
+  if command -v apt-get >/dev/null 2>&1; then
+    if ((EUID == 0)); then
+      export DEBIAN_FRONTEND=noninteractive
+      apt-get update -qq || true
+    fi
+  fi
 
   for pkg in "${PACKAGES[@]}"; do
     if ! apt-cache show "$pkg" >/dev/null 2>&1; then
@@ -107,7 +116,7 @@ build_virtual_package() {
   hash6="$(printf '%s' "$hash_input" | sha256sum | cut -c1-6)"
   package_name="${NAME}-${hash6}-virtual"
 
-  BUILD_ROOT="$(mktemp -d)"
+  BUILD_ROOT="$(mktemp -d /tmp/virtualinstall-build-XXXXXX)"
   pkg_root="${BUILD_ROOT}/${package_name}"
   mkdir -p "${pkg_root}/DEBIAN"
 
