@@ -45,8 +45,6 @@ minimize_repo() {
 }
 
 sync_repo() {
-  local default_branch
-
   mkdir -p "${HOME}/.local/share"
 
   if [[ -d "${INSTALL_DIR}/.git" ]]; then
@@ -54,14 +52,7 @@ sync_repo() {
 
     if [[ -z "$(git -C "${INSTALL_DIR}" status --porcelain)" ]]; then
       echo "Updating repository..."
-
-      default_branch="$(git -C "${INSTALL_DIR}" symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's@^origin/@@')"
-      if [[ -z "$default_branch" ]]; then
-        default_branch="master"
-      fi
-
-      git -C "${INSTALL_DIR}" fetch --depth=1 origin "$default_branch"
-      git -C "${INSTALL_DIR}" reset --hard "origin/${default_branch}"
+      git -C "${INSTALL_DIR}" pull
       minimize_repo
     else
       echo "Local changes detected in ${INSTALL_DIR}; skipping pull." >&2
