@@ -7,6 +7,7 @@ BIN_DIR="${HOME}/.local/bin"
 LAUNCHER_PATH="${BIN_DIR}/virtualinstall"
 RC_MARKER_START="# >>> virtualinstall >>>"
 RC_MARKER_END="# <<< virtualinstall <<<"
+UPDATED_RC_FILES=()
 
 fail() {
   echo "error: $*" >&2
@@ -17,6 +18,13 @@ require_cmd() {
   command -v "$1" >/dev/null 2>&1 || fail "required command not found: $1"
 }
 
+minimize_repo() {
+  if [[ -d "${INSTALL_DIR}/.git" ]]; then
+    git -C "${INSTALL_DIR}" reflog expire --expire=now --all >/dev/null 2>&1 || true
+    git -C "${INSTALL_DIR}" gc --prune=now --quiet >/dev/null 2>&1 || true
+  fi
+}
+
 sync_repo() {
   mkdir -p "${HOME}/.local/share"
 
@@ -25,7 +33,8 @@ sync_repo() {
 
     if git -C "${INSTALL_DIR}" diff --quiet && git -C "${INSTALL_DIR}" diff --cached --quiet; then
       echo "Updating repository..."
-      git -C "${INSTALL_DIR}" pull --ff-only
+      git -C "${INSTALL_DIR}" pull --ff-only --depth=1
+      minimize_repo
     else
       echo "Local changes detected in ${INSTALL_DIR}; skipping pull." >&2
       echo "Commit/stash your changes there, then re-run installer to update." >&2
@@ -34,7 +43,8 @@ sync_repo() {
     fail "${INSTALL_DIR} exists but is not a git repository"
   else
     echo "Cloning repository to ${INSTALL_DIR}..."
-    git clone "${REPO_URL}" "${INSTALL_DIR}"
+    git clone --depth=1 --single-branch "${REPO_URL}" "${INSTALL_DIR}"
+    minimize_repo
   fi
 }
 
@@ -58,6 +68,7 @@ ensure_rc_block() {
 
   if grep -Fq "${RC_MARKER_START}" "$rc_file"; then
     echo "virtualinstall block already present in ${rc_file}"
+    UPDATED_RC_FILES+=("$rc_file")
     return
   fi
 
@@ -73,6 +84,29 @@ ${RC_MARKER_END}
 EOF
 
   echo "Updated shell rc file: ${rc_file}"
+  UPDATED_RC_FILES+=("$rc_file")
+}
+
+print_next_steps() {
+  local rc_file
+
+  echo
+  echo "Installation complete."
+  echo "You can run it immediately with:"
+  echo "  ${LAUNCHER_PATH} --help"
+
+  if [[ ":$PATH:" == *":${BIN_DIR}:"* ]]; then
+    echo "Your PATH already includes ${BIN_DIR}."
+    echo "Command should already work:"
+    echo "  virtualinstall --help"
+  else
+    echo "To enable 'virtualinstall' command in this shell, run:"
+    for rc_file in "${UPDATED_RC_FILES[@]}"; do
+      echo "  source ${rc_file}"
+    done
+    echo "Then run:"
+    echo "  virtualinstall --help"
+  fi
 }
 
 prompt_shell_target() {
@@ -118,10 +152,7 @@ main() {
   sync_repo
   install_launcher
   prompt_shell_target
-
-  echo
-  echo "Installation complete."
-  echo "Open a new shell or source your rc file to use: virtualinstall"
+  print_next_steps
 }
 
 main "$@"
