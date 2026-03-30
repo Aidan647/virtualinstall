@@ -16,6 +16,19 @@ One-liner installer:
 curl -fsSL https://raw.githubusercontent.com/Aidan647/virtualinstall/refs/heads/master/install.sh | bash
 ```
 
+Non-interactive installer examples:
+
+```bash
+INSTALL_SHELL_CHOICE=1 curl -fsSL https://raw.githubusercontent.com/Aidan647/virtualinstall/refs/heads/master/install.sh | bash
+INSTALL_SHELL_CHOICE=3 INSTALL_CUSTOM_RC=~/.config/fish/config.fish curl -fsSL https://raw.githubusercontent.com/Aidan647/virtualinstall/refs/heads/master/install.sh | bash
+```
+
+`INSTALL_SHELL_CHOICE` values:
+- `1`: bash (`~/.bashrc`)
+- `2`: zsh (`~/.zshrc`)
+- `3`: other custom rc file (requires `INSTALL_CUSTOM_RC`)
+- `4`: bash + zsh
+
 Installer behavior:
 - Clones or updates the repo at `~/.local/share/virtualinstall`
 - Installs launcher at `~/.local/bin/virtualinstall`

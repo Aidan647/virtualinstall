@@ -18,6 +18,18 @@ require_cmd() {
   command -v "$1" >/dev/null 2>&1 || fail "required command not found: $1"
 }
 
+prompt_input() {
+  local var_name="$1"
+  local prompt_text="$2"
+
+  if [[ -r /dev/tty ]]; then
+    read -r -p "$prompt_text" "$var_name" < /dev/tty
+    return
+  fi
+
+  fail "no interactive tty available; set installer env vars instead"
+}
+
 minimize_repo() {
   if [[ -d "${INSTALL_DIR}/.git" ]]; then
     git -C "${INSTALL_DIR}" reflog expire --expire=now --all >/dev/null 2>&1 || true
@@ -117,7 +129,10 @@ prompt_shell_target() {
   echo "  4) bash + zsh"
 
   local choice
-  read -r -p "Enter choice [1-4]: " choice
+  choice="${INSTALL_SHELL_CHOICE:-}"
+  if [[ -z "$choice" ]]; then
+    prompt_input choice "Enter choice [1-4]: "
+  fi
 
   case "$choice" in
     1)
@@ -128,7 +143,10 @@ prompt_shell_target() {
       ;;
     3)
       local custom_rc
-      read -r -p "Enter rc file path: " custom_rc
+      custom_rc="${INSTALL_CUSTOM_RC:-}"
+      if [[ -z "$custom_rc" ]]; then
+        prompt_input custom_rc "Enter rc file path: "
+      fi
       [[ -n "$custom_rc" ]] || fail "custom rc file path cannot be empty"
 
       if [[ "$custom_rc" == ~* ]]; then
