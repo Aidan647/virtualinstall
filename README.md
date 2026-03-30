@@ -1,70 +1,81 @@
 # virtualinstall
 
-Small Docker-based builder for creating virtual Debian packages that only carry dependencies.
+`virtualinstall` creates small virtual Debian packages (`.deb`) that only carry dependency metadata.
 
-Example output name:
-- `default-a1b2c3-virtual.deb`
+Generated package format:
+- `<name>-<hash6>-virtual.deb`
 
-That package can depend on any list you provide, for example:
-- `git ncdu lsd curl wget duf`
+Example:
+- `default-07ad2c-virtual.deb`
 
-## Files
+## Install
 
-- `Dockerfile`: container image for package building.
-- `build.sh`: host command wrapper that runs Docker and writes output to host.
-- `docker-build.sh`: in-container builder that validates packages and builds the dependency-only `.deb`.
-
-## Build The Image
+One-liner installer:
 
 ```bash
-docker build -t virtualinstall:latest .
+curl -fsSL https://raw.githubusercontent.com/Aidan647/virtualinstall/refs/heads/master/install.sh | bash
 ```
 
-## Build A Virtual Package (As Command)
+Installer behavior:
+- Clones or updates the repo at `~/.local/share/virtualinstall`
+- Installs launcher at `~/.local/bin/virtualinstall`
+- Prompts which rc file(s) to update (`bash`, `zsh`, `other`, or `all`)
+- Appends a managed rc block for PATH + launcher alias
+
+## Commands
+
+Use `virtualinstall --help` for full help.
+
+Create package only:
 
 ```bash
-chmod +x ./build.sh
-./build.sh create default -- git ncdu lsd curl wget duf
+virtualinstall create default -- git ncdu lsd curl wget duf
 ```
 
-This writes a file like:
-- `./out/default-xxxxxx-virtual.deb`
-
-Build and install immediately:
+Create and install package:
 
 ```bash
-./build.sh install default -- git ncdu lsd curl wget duf
+virtualinstall install default -- git ncdu lsd curl wget duf
 ```
 
-Optional custom output directory:
+Remove installed package by tag name:
 
 ```bash
-./build.sh create default --output-dir ./packages -- git ncdu lsd curl wget duf
+virtualinstall remove default
 ```
 
-Remove installed virtual package by tag:
+If multiple packages exist for the same name, `remove` will show a selection menu with:
+- package name
+- dependencies
+
+List installed virtual tags:
 
 ```bash
-./build.sh remove default
+virtualinstall list
+virtualinstall list default
 ```
 
-Optional command install to PATH:
+Clean generated `.deb` files from output directory:
 
 ```bash
-sudo install -m 0755 ./build.sh /usr/local/bin/apt-tag-build
-apt-tag-build install default -- git ncdu lsd curl wget duf
+virtualinstall clean
+virtualinstall clean --output-dir ./out
 ```
 
-## Install The Generated Package
+## Options
 
-```bash
-sudo apt install -y ./out/default-xxxxxx-virtual.deb
-```
+- `--output-dir <dir>`: output directory for generated `.deb` files
+- `--rebuild-image`: force Docker image rebuild
+- `--apt-cmd <cmd>`: override package manager command used by `install`/`remove`
 
-## Project Ideas
+APT command selection default order:
+1. `apt-fast`
+2. `apt`
+3. `apt-get`
 
-- Add helper shell alias for `build.sh create|install|remove`.
-- Add lockfile support so tags are reproducible and auditable.
-- Add optional signing of generated `.deb` files for trusted internal repos.
-- Add CI pipeline to publish generated virtual packages to an apt repository.
-- Add JSON output mode for tooling integration.
+## Notes
+
+- Container build script: `docker-build.sh`
+- Host command entrypoint: `build.sh`
+- Tag files are installed in `/var/lib/virtualinstall/tags/`
+- Repeated `create`/`install` with same input reuses existing artifact when available

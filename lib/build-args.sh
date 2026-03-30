@@ -1,23 +1,26 @@
 #!/usr/bin/env bash
 
 usage() {
+  local cmd
+  cmd="${SCRIPT_NAME:-$(basename "$0")}" 
+
   cat <<EOF
 Usage:
-  build.sh create <name> [--output-dir <host-dir>] [--rebuild-image] -- <pkg1> <pkg2> ...
-  build.sh install <name> [--output-dir <host-dir>] [--rebuild-image] [--apt-cmd <cmd>] -- <pkg1> <pkg2> ...
-  build.sh remove <name> [--apt-cmd <cmd>]
-  build.sh clean [--output-dir <host-dir>]
-  build.sh list [name]
+  ${cmd} create <name> [--output-dir <host-dir>] [--rebuild-image] -- <pkg1> <pkg2> ...
+  ${cmd} install <name> [--output-dir <host-dir>] [--rebuild-image] [--apt-cmd <cmd>] -- <pkg1> <pkg2> ...
+  ${cmd} remove <name> [--apt-cmd <cmd>]
+  ${cmd} clean [--output-dir <host-dir>]
+  ${cmd} list [name]
 
 Examples:
-  build.sh create default -- git ncdu lsd curl wget duf
-  build.sh install base --output-dir ./out -- git curl
-  build.sh install base --apt-cmd apt-get -- git curl
-  build.sh install dev --rebuild-image -- jq ripgrep
-  build.sh remove base
-  build.sh clean --output-dir ./out
-  build.sh list
-  build.sh list default
+  ${cmd} create default -- git ncdu lsd curl wget duf
+  ${cmd} install base --output-dir ./out -- git curl
+  ${cmd} install base --apt-cmd apt-get -- git curl
+  ${cmd} install dev --rebuild-image -- jq ripgrep
+  ${cmd} remove base
+  ${cmd} clean --output-dir ./out
+  ${cmd} list
+  ${cmd} list default
 
 Notes:
   - This is the host wrapper command.
